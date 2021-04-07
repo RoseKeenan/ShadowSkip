@@ -6,37 +6,115 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <Button
-        android:id="@+id/btn_proximity"
+    <TextView
+        android:id="@+id/lbl_Gyro"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Proximity"
-        app:layout_constraintBottom_toTopOf="@+id/btn_orientation"
+        android:layout_marginTop="43dp"
+        android:text="Gyroscope Status"
+        android:textColor="#1B224A"
+        android:textSize="36sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn_gyroscope" />
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/lbl_Orientation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="52dp"
+        android:text="Orientation Status"
+        android:textColor="#1B224A"
+        android:textSize="36sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txt_gyro_stat" />
+
+    <TextView
+        android:id="@+id/lbl_proximity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="62dp"
+        android:text="Proximity Status"
+        android:textColor="#1B224A"
+        android:textSize="36sp"
+        app:layout_constraintBottom_toTopOf="@+id/txt_prox_stat"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/txt_gyro_stat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="39dp"
+        android:background="#707070"
+        android:outlineSpotShadowColor="#FFFFFF"
+        android:shadowColor="#FFFFFF"
+        android:text="gyrostat"
+        android:textColor="#4CAF50"
+        android:textSize="30sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lbl_Gyro" />
+
+    <TextView
+        android:id="@+id/txt_orien_stat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="54dp"
+        android:background="#707070"
+        android:outlineSpotShadowColor="#FFFFFF"
+        android:shadowColor="#FFFFFF"
+        android:text="orienstat"
+        android:textColor="#4CAF50"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toTopOf="@+id/lbl_proximity"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/txt_prox_stat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="3dp"
+        android:layout_marginBottom="54dp"
+        android:background="#707070"
+        android:outlineSpotShadowColor="#FFFFFF"
+        android:shadowColor="#FFFFFF"
+        android:text="proxstat"
+        android:textColor="#4CAF50"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toTopOf="@+id/btn_orientation"
+        app:layout_constraintStart_toStartOf="@+id/btn_orientation" />
 
     <Button
         android:id="@+id/btn_orientation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="50dp"
         android:text="Orientation"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn_proximity" />
+        app:layout_constraintEnd_toStartOf="@+id/btn_proximity"
+        app:layout_constraintStart_toEndOf="@+id/btn_gyro" />
 
     <Button
-        android:id="@+id/btn_gyroscope"
+        android:id="@+id/btn_proximity"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Gyroscope"
-        app:layout_constraintBottom_toTopOf="@+id/btn_proximity"
+        android:text="Proximity"
+        app:layout_constraintBaseline_toBaselineOf="@+id/btn_orientation"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toEndOf="@+id/btn_orientation" />
+
+    <Button
+        android:id="@+id/btn_gyro"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="3dp"
+        android:layout_marginEnd="4dp"
+        android:text="Gyroscope"
+        app:layout_constraintBaseline_toBaselineOf="@+id/btn_orientation"
+        app:layout_constraintEnd_toStartOf="@+id/btn_orientation"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
