@@ -23,13 +23,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Sensor gyroscope; // the actual gyroscope
     private Sensor accelerometer; // the actual accelerometer
     private Sensor magneticField; // the actual magnetometer
+    private Sensor proximity; // the actual proximity sensor
     private long gyroStart; // time in seconds when the gyroscope fell into ready position
     private long elapsedSeconds; // amount of seconds gyroscope has been in ready position
     private TextView proxStat;  // TextView (label) that shows the status (status can be ready or not ready) of the proximity sensor
     private TextView gyroStat; // TextView (label) that shows the status (status can be ready or not ready) of the gyroscope
     private TextView orienStat; // TextView (label) that shows the status (status can be ready or not ready) of the orientation
     private boolean gyroReady; // boolean to signify ready status of the gyroscope
-    private boolean orientationReady;
+    private boolean orientationReady; // boolean to signify ready status of the orientation
+    private boolean proximityIsClose; // boolean to signify is something is close to the prox sensor
     private final float[] accelerometerReading = new float[3]; // readouts from the accelerometer in x y and z directions
     private final float[] magnetometerReading = new float[3]; // readouts from the magnetometer in x y and z directions
     private final float[] rotationMatrix = new float[9]; // don't worry about this, this is something android provides to get the orientation
@@ -39,8 +41,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Android framework stuff
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         Button gyroscopeButton = findViewById(R.id.btn_gyro);
         Button orientationButton = findViewById(R.id.btn_orientation);
@@ -50,7 +54,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         proxStat = findViewById(R.id.txt_prox_stat);
 
 
-
+        //These next three if statements check if the sensor appears on the phone. If so, it will
+        //      allow the buttons to work.
         if(sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null) {
             gyroscopeButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -60,7 +65,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
             });
         }
-
         if(sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null && sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) != null){
             orientationButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -70,7 +74,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
             });
         }
-
         if(sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY) != null) {
             proximityButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -80,38 +83,63 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
             });
         }
+        //END BUTTON LOGIC
 
         gyroStart = (long) 0;
         elapsedSeconds = 0;
         gyroReady = false;
         orientationReady = false;
 
-
         gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         magneticField = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        proximity = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
 
         sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_UI);
-        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL, SensorManager.SENSOR_DELAY_UI);
-        sensorManager.registerListener(this, magneticField, SensorManager.SENSOR_DELAY_NORMAL, SensorManager.SENSOR_DELAY_UI);
-
+        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI);
+        sensorManager.registerListener(this, magneticField, SensorManager.SENSOR_DELAY_UI);
+        sensorManager.registerListener(this, proximity, SensorManager.SENSOR_DELAY_UI);
     }
 
     @Override
     public void onSensorChanged(SensorEvent event) {
+        //If sensor event relates to gyroscope, run gyroChanged function/
         if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE){
             gyroChanged(event);
         }
+        //If sensor event relates to accelerometer, copy these arrays
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             System.arraycopy(event.values, 0, accelerometerReading,
                     0, accelerometerReading.length);
         }
+        //If sensor isn't accelerometer but is magnetometer, copy these arrays
         else if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
             System.arraycopy(event.values, 0, magnetometerReading,
                     0, magnetometerReading.length);
         }
         updateOrientationAngles();
 
+        if (event.sensor.getType() == Sensor.TYPE_PROXIMITY){
+            proxChanged(event);
+        }
+
+    }
+
+    public void proxChanged(SensorEvent event){
+        Log.println(Log.ASSERT, "Got to", "proxChanged()");
+        float distance = event.values[0];
+        if(orientationReady && distance >= 5){
+            proxStat.setText("Far");
+            proximityIsClose = false;
+        }
+        else if(orientationReady && distance < 5){
+            proxStat.setText("Near");
+            proximityIsClose = true;
+        }
+        if(!orientationReady){
+            proxStat.setText("Not Ready");
+            proximityIsClose = false;
+        }
     }
 
     public void updateOrientationAngles() {
@@ -169,9 +197,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             elapsedSeconds = 0;
         }
 
-        Log.println(Log.ASSERT, "elapsed", String.valueOf(elapsedSeconds));
-        Log.println(Log.ASSERT, "gyroStart", String.valueOf(gyroStart));
-
-
+//        Log.println(Log.ASSERT, "elapsed", String.valueOf(elapsedSeconds));
+//        Log.println(Log.ASSERT, "gyroStart", String.valueOf(gyroStart));
     }
 }
