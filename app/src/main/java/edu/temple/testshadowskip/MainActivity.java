@@ -8,8 +8,12 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.AudioManager;
+import android.media.session.MediaController;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -33,11 +37,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private TextView orienStat; // TextView (label) that shows the status (status can be ready or not ready) of the orientation
     private boolean gyroReady; // boolean to signify ready status of the gyroscope
     private boolean orientationReady; // boolean to signify ready status of the orientation
-    private boolean lastProxNear; // boolean to signify is the last triggering of the prox read near
+    private boolean lastTriggerWasPlay; // boolean to signify is the last triggering of the prox read near
     private final float[] accelerometerReading = new float[3]; // readouts from the accelerometer in x y and z directions
     private final float[] magnetometerReading = new float[3]; // readouts from the magnetometer in x y and z directions
     private final float[] rotationMatrix = new float[9]; // don't worry about this, this is something android provides to get the orientation
     private final float[] orientationAngles = new float[3]; // the Azimuth, pitch, and roll of the phone
+    private AudioManager am;
+    private AudioManager.OnAudioFocusChangeListener af;
+
 
 
 
@@ -87,12 +94,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
         //END BUTTON LOGIC
 
+
+
+
         gyroStart = 0;
         elapsedSeconds = 0;
         proxStart = 0;
         proxStop = 0;
         gyroReady = false;
         orientationReady = false;
+        lastTriggerWasPlay = false;
 
         gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -103,6 +114,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI);
         sensorManager.registerListener(this, magneticField, SensorManager.SENSOR_DELAY_UI);
         sensorManager.registerListener(this, proximity, SensorManager.SENSOR_DELAY_UI);
+
+        Context context = this;
+        am = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
+        af = new AudioManager.OnAudioFocusChangeListener() {
+
+            public void onAudioFocusChange(int focusChange) {
+                if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK) {
+                    // Lower the volume
+                } else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
+                    // Raise it back to normal
+                }
+            }
+
+        };
     }
 
     @Override
@@ -129,8 +154,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
+
     public void proxChanged(SensorEvent event){
-//        Log.println(Log.ASSERT, "Got to", "proxChanged()");
         float distance = event.values[0];
         long time = event.timestamp / 10000000;
 
@@ -144,10 +169,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             if(proxStop - proxStart > 100){
                 proxStat.setText("Long");
-
+                am.abandonAudioFocus(null);
             }
             if ((proxStop - proxStart) < 100 && (proxStop - proxStart) > 0){
                 proxStat.setText("Short");
+                am.requestAudioFocus(null,AudioManager.STREAM_MUSIC,AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
             }
             if (proxStop - proxStart < 0){
                 proxStat.setText("Measuring...");
@@ -225,4 +251,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //        Log.println(Log.ASSERT, "elapsed", String.valueOf(elapsedSeconds));
 //        Log.println(Log.ASSERT, "gyroStart", String.valueOf(gyroStart));
     }
+
+
+
 }
