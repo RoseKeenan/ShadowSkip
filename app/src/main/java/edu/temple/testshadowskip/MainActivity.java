@@ -1,7 +1,13 @@
+/*
+====================================================================================================
+==                             Code by Braeden Trautz and Rose Keenan                             ==
+==                    19 April 2021 for CIS 4330/60 at Temple University under                    ==
+==                                    professor Yan Wang                                          ==
+====================================================================================================
+ */
 package edu.temple.testshadowskip;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.Sensor;
@@ -9,17 +15,11 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.media.AudioManager;
-import android.media.session.MediaController;
-import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import java.text.DecimalFormat;
-import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener /*Implementing this lets us have a sensor event listener*/ {
 
@@ -37,16 +37,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private TextView orienStat; // TextView (label) that shows the status (status can be ready or not ready) of the orientation
     private boolean gyroReady; // boolean to signify ready status of the gyroscope
     private boolean orientationReady; // boolean to signify ready status of the orientation
-    private boolean lastTriggerWasPlay; // boolean to signify is the last triggering of the prox read near
     private final float[] accelerometerReading = new float[3]; // readouts from the accelerometer in x y and z directions
     private final float[] magnetometerReading = new float[3]; // readouts from the magnetometer in x y and z directions
-    private final float[] rotationMatrix = new float[9]; // don't worry about this, this is something android provides to get the orientation
+    private final float[] rotationMatrix = new float[9]; // don't worry about this, this is something Android provides to get the orientation
     private final float[] orientationAngles = new float[3]; // the Azimuth, pitch, and roll of the phone
-    private AudioManager am;
-    private AudioManager.OnAudioFocusChangeListener af;
-
-
-
+    private AudioManager am; // Audio Manager object to gain audio focus of our app (pausing music) and losing audio focus (playing)
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,8 +98,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         proxStop = 0;
         gyroReady = false;
         orientationReady = false;
-        lastTriggerWasPlay = false;
-        Context context = this;
+        Context context = this; // This one isn't global we just need context to get the audio service for the AudioManager object
         am = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
         gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -116,9 +110,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI);
         sensorManager.registerListener(this, magneticField, SensorManager.SENSOR_DELAY_UI);
         sensorManager.registerListener(this, proximity, SensorManager.SENSOR_DELAY_UI);
-
-
-
     }
 
     /**
@@ -290,3 +281,35 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 }
+
+/*
+====================================================================================================
+==                                  THOUGHTS ABOUT THIS PROJECT                                   ==
+====================================================================================================
+    Some things could definitely have been done in a better way.  The way the listeners calculate
+time is quite sloppy as they don't continually run.  Therefore the calculations of time elapsed
+can be off by a very small amount.  The audio is also triggered in an unstable and deprecated manner.
+Instead of gaining and losing audio focus, we should have tried to find a way to access the audio
+player and manipulated it directly.  Because of the way we did it there are some limitations:
+    - We cannot play music that started paused on application launch
+    - We cannot skip songs
+
+    In any case, the main functionality still works. Some tweaks to make would include having the music
+ play or pause on the same "short" proximity reading, and have the music skip songs on long holds.
+ This is unachievable with the current methods used, and I have no understanding of how it could
+ be done without more education on the Android Framework.
+
+    Another idea includes reworking the application entirely into a Service that could be running in
+ the background of the OS at all times.  As of now, there really is no need to verify that the phone
+ is face up and stable, as when the user opens the application, they know they will be using it to
+ pause and play music, and there is no chance of accidental triggering (the reason why we implemented
+ face up and gyro stability recognition).  This should in theory be easy to accomplish as we have
+ all of the logic and code, yet our understanding of the Android Framework once again has left us
+ limited in our approach.
+
+    Overall, I think we accomplished a lot with limited understanding and time.  The application
+ provides real functionality, and that is what matters at this point.  Thanks for reading, and I hope
+ our little program gets some use :)
+
+ - Braeden Trautz
+ */
