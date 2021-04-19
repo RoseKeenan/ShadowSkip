@@ -9,7 +9,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.TestShadowSkip">
-        <activity android:name=".ProximityActivity"></activity>
+        <service
+            android:name=".ShadowskipService"
+            android:enabled="true"
+            android:exported="true"></service>
+
+        <activity android:name=".ProximityActivity" />
         <activity android:name=".OrientationActivity" />
         <activity android:name=".GyroActivity" />
         <activity android:name=".MainActivity">
