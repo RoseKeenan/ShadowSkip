@@ -26,12 +26,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Sensor proximity; // the actual proximity sensor
     private long gyroStart; // time in seconds when the gyroscope fell into ready position
     private long elapsedSeconds; // amount of seconds gyroscope has been in ready position
+    private long proxStart; // time in hundredths of a second when the proximity sensor fell into the near position
+    private long proxStop; // time in hundredths of a second when the proximity sensor fell into the far position
     private TextView proxStat;  // TextView (label) that shows the status (status can be ready or not ready) of the proximity sensor
     private TextView gyroStat; // TextView (label) that shows the status (status can be ready or not ready) of the gyroscope
     private TextView orienStat; // TextView (label) that shows the status (status can be ready or not ready) of the orientation
     private boolean gyroReady; // boolean to signify ready status of the gyroscope
     private boolean orientationReady; // boolean to signify ready status of the orientation
-    private boolean proximityIsClose; // boolean to signify is something is close to the prox sensor
+    private boolean lastProxNear; // boolean to signify is the last triggering of the prox read near
     private final float[] accelerometerReading = new float[3]; // readouts from the accelerometer in x y and z directions
     private final float[] magnetometerReading = new float[3]; // readouts from the magnetometer in x y and z directions
     private final float[] rotationMatrix = new float[9]; // don't worry about this, this is something android provides to get the orientation
@@ -85,8 +87,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
         //END BUTTON LOGIC
 
-        gyroStart = (long) 0;
+        gyroStart = 0;
         elapsedSeconds = 0;
+        proxStart = 0;
+        proxStop = 0;
         gyroReady = false;
         orientationReady = false;
 
@@ -126,20 +130,36 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void proxChanged(SensorEvent event){
-        Log.println(Log.ASSERT, "Got to", "proxChanged()");
+//        Log.println(Log.ASSERT, "Got to", "proxChanged()");
         float distance = event.values[0];
-        if(orientationReady && distance >= 5){
-            proxStat.setText("Far");
-            proximityIsClose = false;
+        long time = event.timestamp / 10000000;
+
+        if (orientationReady){
+            if(distance < 5){
+                proxStart = time;
+            }
+            else{
+                proxStop = time;
+            }
+
+            if(proxStop - proxStart > 100){
+                proxStat.setText("Long");
+
+            }
+            if ((proxStop - proxStart) < 100 && (proxStop - proxStart) > 0){
+                proxStat.setText("Short");
+            }
+            if (proxStop - proxStart < 0){
+                proxStat.setText("Measuring...");
+            }
         }
-        else if(orientationReady && distance < 5){
-            proxStat.setText("Near");
-            proximityIsClose = true;
-        }
-        if(!orientationReady){
+        if (!orientationReady){
             proxStat.setText("Not Ready");
-            proximityIsClose = false;
         }
+
+//        Log.println(Log.ASSERT, "start", String.valueOf(proxStart));
+//        Log.println(Log.ASSERT, "stop", String.valueOf(proxStop));
+//        Log.println(Log.ASSERT, "diff", String.valueOf(proxStop - proxStart));
     }
 
     public void updateOrientationAngles() {
@@ -160,6 +180,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if(!(avg < 0.1 && avg > -0.1) || !gyroReady){
             orientationReady = false;
             orienStat.setText("Not ready");
+            proxStat.setText("Not Ready");
         }
     }
     @Override
@@ -195,6 +216,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             gyroReady = false;
             gyroStart = 0;
             elapsedSeconds = 0;
+            proxStat.setText("Not Ready");
+            orienStat.setText("Not Ready");
+            orientationReady = false;
+
         }
 
 //        Log.println(Log.ASSERT, "elapsed", String.valueOf(elapsedSeconds));
